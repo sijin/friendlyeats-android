@@ -40,8 +40,13 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.example.fireeats.model.Restaurant;
+import com.google.firebase.example.fireeats.util.RestaurantUtil;
 
 import java.util.Collections;
+
+
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -80,6 +85,7 @@ public class MainActivity extends AppCompatActivity implements
 
     private MainActivityViewModel mViewModel;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -99,10 +105,17 @@ public class MainActivity extends AppCompatActivity implements
 
         // Filter Dialog
         mFilterDialog = new FilterDialogFragment();
+
     }
 
     private void initFirestore() {
         // TODO(developer): Implement
+        mFirestore = FirebaseFirestore.getInstance();
+
+        // Get the 50 highest rated restaurants
+        mQuery = mFirestore.collection("restaurants")
+                .orderBy("avgRating", Query.Direction.DESCENDING)
+                .limit(LIMIT);
     }
 
     private void initRecyclerView() {
@@ -164,8 +177,17 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void onAddItemsClicked() {
-        // TODO(developer): Add random restaurants
-        showTodoToast();
+        //Get a reference to the restaurants collection
+        CollectionReference restaurants = mFirestore.collection("restaurants");
+
+        for (int i = 0; i < 10; i++) {
+            // Get a random Restaurant POJO
+            Restaurant restaurant = RestaurantUtil.getRandom(this);
+
+            // Add a new document to the restaurants collection
+            restaurants.add(restaurant);
+
+        }
     }
 
     @Override
@@ -238,6 +260,7 @@ public class MainActivity extends AppCompatActivity implements
     private boolean shouldStartSignIn() {
         return (!mViewModel.getIsSigningIn() && FirebaseAuth.getInstance().getCurrentUser() == null);
     }
+
 
     private void startSignIn() {
         // Sign in with FirebaseUI
